@@ -49,7 +49,8 @@ function signIn() {
   const existingLogoutBtn = document.querySelector("#logout-btn");
 
   if (isTrue) {
-    h3.innerText = "Signed In";
+    h3.innerText = "Signed In as " + signInUserInput.value;
+    h3.style.color = "green";
 
     // Store logged-in user
     sessionStorage.setItem("loggedInUser", signInUserInput.value);
@@ -69,6 +70,7 @@ function signIn() {
     }
   } else {
     h3.innerText = "Try Again";
+    h3.style.color = "red";
 
     // Remove the session if login failed
     sessionStorage.removeItem("loggedInUser");
@@ -86,7 +88,7 @@ function checkSignedIn() {
   const loggedInUser = sessionStorage.getItem("loggedInUser");
 
   if (loggedInUser) {
-    h3.innerText = `Signed in as ${loggedInUser}`;
+    h3.innerText = `Currently signed in as ${loggedInUser}`;
 
     if (!document.querySelector("#logout-btn")) {
       const logoutBtn = document.createElement("button");
