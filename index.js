@@ -13,6 +13,9 @@ function register() {
   users.push(user);
 
   localStorage.setItem("users", JSON.stringify(users));
+
+  //Changed register div to form instead, so that i can reset the input values this way since it is scalable and i dont have to empty each and every one
+  document.querySelector(".register-div").reset();
 }
 
 registerBtn.addEventListener("click", register);
@@ -33,8 +36,8 @@ function signIn() {
 
   h3.innerText = "";
 
-  //Parse string back to array/object
-  let savedUsers = JSON.parse(localStorage.getItem("users"));
+  //Parse string back to array/object, added empty array in case no user array exists
+  let savedUsers = JSON.parse(localStorage.getItem("users")) || [];
 
   //   Check if any of inputs are saved in LS
   const isTrue = savedUsers.some(
@@ -80,6 +83,8 @@ function signIn() {
       existingLogoutBtn.remove();
     }
   }
+
+  document.querySelector(".signIn-div").reset();
 }
 
 signInBtn.addEventListener("click", signIn);

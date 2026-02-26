@@ -9,7 +9,7 @@
   </head>
   <body>
     <div class="container">
-      <div class="register-div">
+      <form class="register-div">
         <h2>Register</h2>
         <label>
           Username:
@@ -28,11 +28,11 @@
         /></label>
 
         <button id="register-btn">Register</button>
-      </div>
+      </form>
 
       <div class="vl"></div>
 
-      <div class="signIn-div">
+      <form class="signIn-div">
         <h2>Sign in</h2>
         <label>
           Username:
@@ -48,8 +48,9 @@
             autocomplete="off"
         /></label>
 
-        <button id="signIn-btn">Sign in</button>
-      </div>
+        <!-- inside a form, a button will be of type submit by default and that refreshes the page -->
+        <button id="signIn-btn" type="button">Sign in</button>
+      </form>
     </div>
   </body>
 </html>

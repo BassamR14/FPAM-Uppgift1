@@ -35,6 +35,11 @@ button {
   display: block;
 }
 
+button:hover {
+  cursor: pointer;
+  background-color: mediumseagreen;
+}
+
 input {
   padding: 5px;
 }
