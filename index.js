@@ -10,11 +10,18 @@ function register() {
     username: registerUserInput.value,
     password: registerPasswordInput.value,
   };
-  users.push(user);
+
+  //check if there is anything in LS, if there is, just push it into the array in LS, if not then create a new array
+  if (localStorage.getItem("users")) {
+    users = JSON.parse(localStorage.getItem("users"));
+    users.push(user);
+  } else {
+    users = [user];
+  }
 
   localStorage.setItem("users", JSON.stringify(users));
 
-  //Changed register div to form instead, so that i can reset the input values this way since it is scalable and i dont have to empty each and every one
+  //Changed register div to form instead, so that i can reset the input values this way since it is scalable and i don't have to empty each and every one
   document.querySelector(".register-div").reset();
 }
 
