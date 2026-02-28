@@ -240,6 +240,11 @@ function todoList() {
 function dmToggle() {
   const body = document.querySelector("body");
   body.classList.toggle("DM");
+  if (body.classList.contains("DM")) {
+    dmToggleBtn.innerText = "Light Mode";
+  } else {
+    dmToggleBtn.innerText = "Dark Mode";
+  }
 }
 
 dmToggleBtn.addEventListener("click", dmToggle);
