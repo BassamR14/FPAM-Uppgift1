@@ -1,7 +1,7 @@
 .container {
   display: flex;
   width: 100%;
-  height: 100vh;
+  height: 600px;
   justify-content: center;
   align-items: center;
   gap: 100px;
@@ -46,4 +46,19 @@ input {
 
 h3 {
   text-align: center;
+}
+
+.todo-div {
+  display: flex;
+  justify-content: center;
+  gap: 200px;
+}
+
+.action-btns {
+  display: flex;
+  justify-self: center;
+}
+
+.action-btns button {
+  margin: 10px 10px;
 }

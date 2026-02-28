@@ -37,6 +37,7 @@ registerBtn.addEventListener("click", register);
 const signInBtn = document.querySelector("#signIn-btn");
 
 const signInDiv = document.querySelector(".signIn-div");
+const actionBtnsDiv = document.querySelector(".action-btns");
 let h3 = document.createElement("h3");
 signInDiv.append(h3);
 
@@ -73,7 +74,7 @@ function signIn() {
       const logoutBtn = document.createElement("button");
       logoutBtn.id = "logout-btn";
       logoutBtn.innerText = "Log Out";
-      signInDiv.append(logoutBtn);
+      actionBtnsDiv.append(logoutBtn);
 
       logoutBtn.addEventListener("click", () => {
         if (currentTodoDiv) {
@@ -116,7 +117,7 @@ function checkSignedIn() {
       const logoutBtn = document.createElement("button");
       logoutBtn.id = "logout-btn";
       logoutBtn.innerText = "Log Out";
-      signInDiv.append(logoutBtn);
+      actionBtnsDiv.append(logoutBtn);
 
       logoutBtn.addEventListener("click", () => {
         if (currentTodoDiv) {
