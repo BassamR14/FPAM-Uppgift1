@@ -71,7 +71,7 @@ function signIn() {
     // Store logged-in user
     sessionStorage.setItem("loggedInUser", JSON.stringify(foundUser));
 
-    //so that only 1 button is created
+    //Create logout button, render to do list, check if dark mode is saved
     createLogoutButton();
     todoList();
     applyUserSettings();
@@ -109,6 +109,7 @@ checkSignedIn();
 
 //Create log out button
 function createLogoutButton() {
+  //If there is already logout button, do nothing
   if (document.querySelector("#logout-btn")) return;
 
   const logoutBtn = document.createElement("button");
@@ -121,6 +122,7 @@ function createLogoutButton() {
 
 //Function for logging out
 function logout() {
+  //To erase to do render
   if (currentTodoDiv) {
     currentTodoDiv.remove();
     currentTodoDiv = null;
@@ -138,8 +140,6 @@ function logout() {
 
 //To-do creation + rendering
 function todoList() {
-  //Create To-do div + todo inputs + todo list
-
   if (currentTodoDiv) return currentTodoDiv;
 
   //to-dos container
@@ -195,16 +195,17 @@ function todoList() {
     localStorage.setItem("todos", JSON.stringify(todos));
 
     todoInputDiv.reset();
-
     renderList();
   });
 
+  //Render todo list, made into function to keep code dry
   function renderList() {
     todoListDiv.innerHTML = "";
 
     const completedList = document.createElement("ul");
     const incompletedList = document.createElement("ul");
 
+    //get all todos, get current user, get their todos, split into completed and incompleted.
     const allTodos = JSON.parse(localStorage.getItem("todos")) || [];
     const loggedUser = JSON.parse(sessionStorage.getItem("loggedInUser"));
     const userTodos = allTodos.filter((todo) => todo.userId === loggedUser.id);
@@ -252,7 +253,7 @@ function dmToggle() {
   const loggedUser = JSON.parse(sessionStorage.getItem("loggedInUser"));
   if (!loggedUser) return; // nothing to save if no user
 
-  // get all user settings or start fresh
+  // get all user settings
   let userSettings = JSON.parse(localStorage.getItem("userSettings")) || {};
 
   // save the darkMode for this user
@@ -268,6 +269,7 @@ function dmToggle() {
 
 dmToggleBtn.addEventListener("click", dmToggle);
 
+//Check whether dark mode is saved or not
 function applyUserSettings() {
   const loggedUser = JSON.parse(sessionStorage.getItem("loggedInUser"));
   if (!loggedUser) return;
