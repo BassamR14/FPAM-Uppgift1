@@ -74,6 +74,7 @@ function signIn() {
     //so that only 1 button is created
     createLogoutButton();
     todoList();
+    applyUserSettings();
   } else {
     h3.innerText = "Try Again";
     h3.style.color = "red";
@@ -100,6 +101,7 @@ function checkSignedIn() {
     h3.innerText = `Currently signed in as ${loggedInUser.username}`;
     createLogoutButton();
     todoList();
+    applyUserSettings();
   }
 }
 
@@ -123,6 +125,12 @@ function logout() {
     currentTodoDiv.remove();
     currentTodoDiv = null;
   }
+
+  // Reset dark mode to default
+  const body = document.body;
+  body.classList.remove("DM");
+  dmToggleBtn.innerText = "Dark Mode";
+
   sessionStorage.removeItem("loggedInUser");
   document.querySelector("#logout-btn")?.remove();
   h3.innerText = "";
@@ -238,13 +246,40 @@ function todoList() {
 
 //Dark mode toggle
 function dmToggle() {
-  const body = document.querySelector("body");
+  const body = document.body;
   body.classList.toggle("DM");
-  if (body.classList.contains("DM")) {
-    dmToggleBtn.innerText = "Light Mode";
-  } else {
-    dmToggleBtn.innerText = "Dark Mode";
-  }
+
+  const loggedUser = JSON.parse(sessionStorage.getItem("loggedInUser"));
+  if (!loggedUser) return; // nothing to save if no user
+
+  // get all user settings or start fresh
+  let userSettings = JSON.parse(localStorage.getItem("userSettings")) || {};
+
+  // save the darkMode for this user
+  userSettings[loggedUser.id] = body.classList.contains("DM");
+
+  localStorage.setItem("userSettings", JSON.stringify(userSettings));
+
+  // update the button text
+  dmToggleBtn.innerText = body.classList.contains("DM")
+    ? "Light Mode"
+    : "Dark Mode";
 }
 
 dmToggleBtn.addEventListener("click", dmToggle);
+
+function applyUserSettings() {
+  const loggedUser = JSON.parse(sessionStorage.getItem("loggedInUser"));
+  if (!loggedUser) return;
+
+  const userSettings = JSON.parse(localStorage.getItem("userSettings")) || {};
+  const darkMode = userSettings[loggedUser.id]; // true or false
+
+  if (darkMode) {
+    document.body.classList.add("DM");
+    dmToggleBtn.innerText = "Light Mode";
+  } else {
+    document.body.classList.remove("DM");
+    dmToggleBtn.innerText = "Dark Mode";
+  }
+}
