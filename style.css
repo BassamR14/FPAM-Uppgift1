@@ -62,3 +62,24 @@ h3 {
 .action-btns button {
   margin: 10px 10px;
 }
+
+/* Dark mode */
+
+.dm-toggle {
+  position: absolute;
+  top: 10px;
+  right: 50px;
+}
+
+body.DM {
+  background-color: #1b2a1f;
+  color: #f5f0e1;
+}
+
+body.DM input {
+  background-color: #f5f0e1;
+}
+
+body.DM .vl {
+  border-color: #f5f0e1;
+}

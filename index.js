@@ -2,15 +2,16 @@
 
 //All Global Variables
 const registerBtn = document.querySelector("#register-btn");
-let users = [];
-let currentTodoDiv = null;
-
 const signInBtn = document.querySelector("#signIn-btn");
 const signInDiv = document.querySelector(".signIn-div");
 const actionBtnsDiv = document.querySelector(".action-btns");
+const dmToggleBtn = document.querySelector(".dm-toggle");
+
 let h3 = document.createElement("h3");
 signInDiv.append(h3);
 
+let users = [];
+let currentTodoDiv = null;
 let todos = [];
 
 //Register User
@@ -228,3 +229,10 @@ function todoList() {
 
   renderList();
 }
+
+function dmToggle() {
+  const body = document.querySelector("body");
+  body.classList.toggle("DM");
+}
+
+dmToggleBtn.addEventListener("click", dmToggle);
