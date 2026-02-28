@@ -153,8 +153,10 @@ function todoList() {
   saveBtn.setAttribute("type", "button");
   saveBtn.innerText = "Save";
   saveBtn.classList.add("save-btn");
+  const inputHeading = document.createElement("h3");
+  inputHeading.innerText = "Create To-dos";
 
-  todoInputDiv.append(checkboxLabel, todoInputLabel, saveBtn);
+  todoInputDiv.append(inputHeading, checkboxLabel, todoInputLabel, saveBtn);
   todoDiv.append(todoInputDiv);
   document.querySelector("body").append(todoDiv);
 
@@ -219,7 +221,11 @@ function todoList() {
     const completeHeading = document.createElement("h4");
     completeHeading.innerText = "Completed";
 
+    const listHeading = document.createElement("h3");
+    listHeading.innerText = `${loggedUser.username}'s To-Do List`;
+
     todoListDiv.append(
+      listHeading,
       incompleteHeading,
       incompletedList,
       completeHeading,
@@ -230,6 +236,7 @@ function todoList() {
   renderList();
 }
 
+//Dark mode toggle
 function dmToggle() {
   const body = document.querySelector("body");
   body.classList.toggle("DM");
