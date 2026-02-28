@@ -1,8 +1,19 @@
-//Register User
+//to clear LS or SS: LS/SS.clear()
+
+//All Global Variables
 const registerBtn = document.querySelector("#register-btn");
 let users = [];
 let currentTodoDiv = null;
 
+const signInBtn = document.querySelector("#signIn-btn");
+const signInDiv = document.querySelector(".signIn-div");
+const actionBtnsDiv = document.querySelector(".action-btns");
+let h3 = document.createElement("h3");
+signInDiv.append(h3);
+
+let todos = [];
+
+//Register User
 function register() {
   const registerUserInput = document.querySelector("#register-user");
   const registerPasswordInput = document.querySelector("#register-password");
@@ -30,17 +41,7 @@ function register() {
 
 registerBtn.addEventListener("click", register);
 
-//to clear LS: LS.clear()
-
 //Sign in with User
-
-const signInBtn = document.querySelector("#signIn-btn");
-
-const signInDiv = document.querySelector(".signIn-div");
-const actionBtnsDiv = document.querySelector(".action-btns");
-let h3 = document.createElement("h3");
-signInDiv.append(h3);
-
 function signIn() {
   const signInUserInput = document.querySelector("#signIn-user");
   const signInPasswordInput = document.querySelector("#signIn-password");
@@ -70,24 +71,7 @@ function signIn() {
     sessionStorage.setItem("loggedInUser", JSON.stringify(foundUser));
 
     //so that only 1 button is created
-    if (!document.querySelector("#logout-btn")) {
-      const logoutBtn = document.createElement("button");
-      logoutBtn.id = "logout-btn";
-      logoutBtn.innerText = "Log Out";
-      actionBtnsDiv.append(logoutBtn);
-
-      logoutBtn.addEventListener("click", () => {
-        if (currentTodoDiv) {
-          currentTodoDiv.remove();
-          currentTodoDiv = null;
-        }
-        sessionStorage.removeItem("loggedInUser");
-        // sessionStorage.clear();
-        logoutBtn.remove();
-        h3.innerText = "";
-      });
-    }
-
+    createLogoutButton();
     todoList();
   } else {
     h3.innerText = "Try Again";
@@ -102,43 +86,48 @@ function signIn() {
     }
   }
 
-  document.querySelector(".signIn-div").reset();
+  signInDiv.reset();
 }
 
 signInBtn.addEventListener("click", signIn);
 
+//Check if a user is signed in
 function checkSignedIn() {
   const loggedInUser = JSON.parse(sessionStorage.getItem("loggedInUser"));
 
   if (loggedInUser) {
     h3.innerText = `Currently signed in as ${loggedInUser.username}`;
-
-    if (!document.querySelector("#logout-btn")) {
-      const logoutBtn = document.createElement("button");
-      logoutBtn.id = "logout-btn";
-      logoutBtn.innerText = "Log Out";
-      actionBtnsDiv.append(logoutBtn);
-
-      logoutBtn.addEventListener("click", () => {
-        if (currentTodoDiv) {
-          currentTodoDiv.remove();
-          currentTodoDiv = null;
-        }
-        sessionStorage.removeItem("loggedInUser");
-        logoutBtn.remove();
-        h3.innerText = "";
-      });
-    }
-
+    createLogoutButton();
     todoList();
   }
 }
 
 checkSignedIn();
 
-//Need to store my todo Div
-let todos = [];
+//Create log out button
+function createLogoutButton() {
+  if (document.querySelector("#logout-btn")) return;
 
+  const logoutBtn = document.createElement("button");
+  logoutBtn.id = "logout-btn";
+  logoutBtn.innerText = "Log Out";
+  actionBtnsDiv.append(logoutBtn);
+
+  logoutBtn.addEventListener("click", logout);
+}
+
+//Function for logging out
+function logout() {
+  if (currentTodoDiv) {
+    currentTodoDiv.remove();
+    currentTodoDiv = null;
+  }
+  sessionStorage.removeItem("loggedInUser");
+  document.querySelector("#logout-btn")?.remove();
+  h3.innerText = "";
+}
+
+//To-do creation + rendering
 function todoList() {
   //Create To-do div + todo inputs + todo list
 
@@ -196,12 +185,17 @@ function todoList() {
 
     todoInputDiv.reset();
 
+    renderList();
+  });
+
+  function renderList() {
     todoListDiv.innerHTML = "";
 
     const completedList = document.createElement("ul");
     const incompletedList = document.createElement("ul");
 
     const allTodos = JSON.parse(localStorage.getItem("todos")) || [];
+    const loggedUser = JSON.parse(sessionStorage.getItem("loggedInUser"));
     const userTodos = allTodos.filter((todo) => todo.userId === loggedUser.id);
     const completedTodos = userTodos.filter((todo) => todo.completed);
     const incompletedTodos = userTodos.filter((todo) => !todo.completed);
@@ -230,41 +224,7 @@ function todoList() {
       completeHeading,
       completedList,
     );
-  });
+  }
 
-  todoListDiv.innerHTML = "";
-
-  const completedList = document.createElement("ul");
-  const incompletedList = document.createElement("ul");
-
-  const allTodos = JSON.parse(localStorage.getItem("todos")) || [];
-  const loggedUser = JSON.parse(sessionStorage.getItem("loggedInUser"));
-  const userTodos = allTodos.filter((todo) => todo.userId === loggedUser.id);
-  const completedTodos = userTodos.filter((todo) => todo.completed);
-  const incompletedTodos = userTodos.filter((todo) => !todo.completed);
-
-  completedTodos.forEach((todo) => {
-    let li = document.createElement("li");
-    li.innerText = todo.todo;
-    completedList.append(li);
-  });
-
-  incompletedTodos.forEach((todo) => {
-    let li = document.createElement("li");
-    li.innerText = todo.todo;
-    incompletedList.append(li);
-  });
-
-  const incompleteHeading = document.createElement("h4");
-  incompleteHeading.innerText = "Incomplete";
-
-  const completeHeading = document.createElement("h4");
-  completeHeading.innerText = "Completed";
-
-  todoListDiv.append(
-    incompleteHeading,
-    incompletedList,
-    completeHeading,
-    completedList,
-  );
+  renderList();
 }
