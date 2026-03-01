@@ -83,3 +83,47 @@ body.DM input {
 body.DM .vl {
   border-color: #f5f0e1;
 }
+
+body.DM .edit-modal {
+  border-color: #f5f0e1;
+}
+
+/* Edit Section */
+
+.edit-btn {
+  display: inline-block;
+  margin: 0;
+  padding: 10px;
+}
+
+.list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* width: 200px; */
+  gap: 10px;
+  margin: 5px 0;
+}
+
+.list-item span {
+  width: 100px;
+}
+
+/* Use fixed for modals */
+.edit-modal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: inherit;
+  color: inherit;
+  width: 50%;
+  height: 50%;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 2px solid green;
+  border-radius: 10px;
+  transition: border-color 0.3s;
+  z-index: 999;
+}

@@ -176,11 +176,12 @@ function todoList() {
   todoDiv.append(todoListDiv);
 
   //Take input values and save in LS with user ID
-  saveBtn.addEventListener("click", () => {
+  function createListItem() {
     const loggedUser = JSON.parse(sessionStorage.getItem("loggedInUser"));
 
     let todo = {
       userId: loggedUser.id,
+      id: Date.now(),
       completed: checkbox.checked,
       todo: todoInput.value,
     };
@@ -196,7 +197,9 @@ function todoList() {
 
     todoInputDiv.reset();
     renderList();
-  });
+  }
+
+  saveBtn.addEventListener("click", createListItem);
 
   //Render todo list, made into function to keep code dry
   function renderList() {
@@ -212,15 +215,95 @@ function todoList() {
     const completedTodos = userTodos.filter((todo) => todo.completed);
     const incompletedTodos = userTodos.filter((todo) => !todo.completed);
 
-    completedTodos.forEach((todo) => {
+    //function to create the li item
+    function renderListItem(todo) {
       let li = document.createElement("li");
-      li.innerText = todo.todo;
+      let listItem = document.createElement("div");
+      listItem.classList.add("list-item");
+      let span = document.createElement("span");
+      span.innerText = todo.todo;
+      let editBtn = document.createElement("button");
+      editBtn.classList.add("edit-btn");
+      editBtn.innerText = "Edit";
+
+      //We already have todo, but now we need to extend it to editFn, so wrap the event in arrow function. The arrow function “remembers” that specific todo
+      editBtn.addEventListener("click", () => {
+        editFn(todo);
+      });
+
+      listItem.append(span, editBtn);
+      li.append(listItem);
+      return li;
+    }
+
+    function editFn(todo) {
+      // console.log(todo.id);
+      const todoListEditDiv = document.createElement("div");
+      todoListEditDiv.classList.add("edit-modal");
+      const todoInputEditDiv = document.createElement("form");
+      const checkboxEditLabel = document.createElement("label");
+      const checkboxEdit = document.createElement("input");
+      checkboxEdit.type = "checkbox";
+      checkboxEditLabel.appendChild(checkboxEdit);
+      checkboxEditLabel.append(" Completed");
+      const todoInputEditLabel = document.createElement("label");
+      todoInputEditLabel.textContent = "To do: ";
+      const todoInputEdit = document.createElement("input");
+      todoInputEditLabel.appendChild(todoInputEdit);
+      const saveEditBtn = document.createElement("button");
+      saveEditBtn.setAttribute("type", "button");
+      saveEditBtn.innerText = "Edit";
+      const closeBtn = document.createElement("button");
+      closeBtn.setAttribute("type", "button");
+      closeBtn.innerText = "Close";
+      closeBtn.classList.add("close-btn");
+      const inputEditHeading = document.createElement("h3");
+      inputEditHeading.innerText = "Edit To-do";
+
+      todoInputEditDiv.append(
+        inputEditHeading,
+        checkboxEditLabel,
+        todoInputEditLabel,
+        saveEditBtn,
+        closeBtn,
+      );
+      todoListEditDiv.append(todoInputEditDiv);
+      document.body.append(todoListEditDiv);
+
+      function updateListItem(todoId) {
+        //Better to read from local storage
+        const lsTodos = JSON.parse(localStorage.getItem("todos"));
+        const currentTodo = lsTodos.find((todo) => todo.id === todoId);
+        if (!currentTodo) return;
+
+        currentTodo.completed = checkboxEdit.checked;
+        currentTodo.todo = todoInputEdit.value;
+
+        // Save the updated array back to localStorage
+        localStorage.setItem("todos", JSON.stringify(lsTodos));
+
+        // Close the edit modal
+        todoListEditDiv.remove();
+
+        renderList();
+      }
+
+      saveEditBtn.addEventListener("click", () => {
+        updateListItem(todo.id);
+      });
+
+      closeBtn.addEventListener("click", () => {
+        todoListEditDiv.remove();
+      });
+    }
+
+    completedTodos.forEach((todo) => {
+      let li = renderListItem(todo);
       completedList.append(li);
     });
 
     incompletedTodos.forEach((todo) => {
-      let li = document.createElement("li");
-      li.innerText = todo.todo;
+      let li = renderListItem(todo);
       incompletedList.append(li);
     });
 
