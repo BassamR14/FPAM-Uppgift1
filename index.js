@@ -1,91 +1,119 @@
-//to clear LS or SS: LS/SS.clear()
+// ============================
+// Helper Functions
+// ============================
 
-//All Global Variables
+// Create DOM elements easily
+function createElement(type, props = {}, children = []) {
+  const el = document.createElement(type);
+  for (const key in props) {
+    if (key === "class") el.className = props[key];
+    else if (key === "text") el.innerText = props[key];
+    else if (key === "value") el.value = props[key];
+    else if (key === "checked") el.checked = props[key];
+    else el.setAttribute(key, props[key]);
+  }
+  children.forEach((child) => el.append(child));
+  return el;
+}
+
+// Show feedback messages
+function showMessage(message, color = "black") {
+  h3.innerText = message;
+  h3.style.color = color;
+}
+
+// Get current logged-in user
+function getLoggedInUser() {
+  return JSON.parse(sessionStorage.getItem("loggedInUser"));
+}
+
+// Save per-user settings
+function saveUserSetting(userId, key, value) {
+  let settings = JSON.parse(localStorage.getItem("userSettings")) || {};
+  settings[userId] = settings[userId] || {};
+  settings[userId][key] = value;
+  localStorage.setItem("userSettings", JSON.stringify(settings));
+}
+
+// Get per-user settings
+function getUserSettings(userId) {
+  const settings = JSON.parse(localStorage.getItem("userSettings")) || {};
+  return settings[userId] || {};
+}
+
+// ============================
+// Global Variables
+// ============================
+
 const registerBtn = document.querySelector("#register-btn");
 const signInBtn = document.querySelector("#signIn-btn");
 const signInDiv = document.querySelector(".signIn-div");
 const actionBtnsDiv = document.querySelector(".action-btns");
 const dmToggleBtn = document.querySelector(".dm-toggle");
 
-let h3 = document.createElement("h3");
+let h3 = createElement("h3");
 signInDiv.append(h3);
 
-let users = [];
 let currentTodoDiv = null;
-let todos = [];
 
-//Register User
+// ============================
+// User Registration
+// ============================
+
 function register() {
-  const registerUserInput = document.querySelector("#register-user");
-  const registerPasswordInput = document.querySelector("#register-password");
+  const usernameInput = document.querySelector("#register-user");
+  const passwordInput = document.querySelector("#register-password");
 
-  let user = {
-    username: registerUserInput.value,
-    password: registerPasswordInput.value,
-    //Date.now writes the date since 1 jan 1970 in milliseconds
-    id: Date.now(),
-  };
-
-  //check if there is anything in LS, if there is, just push it into the array in LS, if not then create a new array
-  if (localStorage.getItem("users")) {
-    users = JSON.parse(localStorage.getItem("users"));
-    users.push(user);
-  } else {
-    users = [user];
+  if (!usernameInput.value || !passwordInput.value) {
+    showMessage("Please enter username & password", "red");
+    return;
   }
 
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+  if (users.some((u) => u.username === usernameInput.value)) {
+    showMessage("Username already exists", "red");
+    return;
+  }
+
+  const user = {
+    username: usernameInput.value,
+    password: passwordInput.value,
+    id: Date.now(),
+  };
+  users.push(user);
   localStorage.setItem("users", JSON.stringify(users));
 
-  //Changed register div to form instead, so that i can reset the input values this way since it is scalable and i don't have to empty each and every one
   document.querySelector(".register-div").reset();
+  showMessage("User registered!", "green");
 }
 
 registerBtn.addEventListener("click", register);
 
-//Sign in with User
+// ============================
+// Sign-In & Logout
+// ============================
+
 function signIn() {
-  const signInUserInput = document.querySelector("#signIn-user");
-  const signInPasswordInput = document.querySelector("#signIn-password");
+  const usernameInput = document.querySelector("#signIn-user");
+  const passwordInput = document.querySelector("#signIn-password");
 
-  h3.innerText = "";
-
-  //Parse string back to array/object, added empty array in case no user array exists
-  let savedUsers = JSON.parse(localStorage.getItem("users")) || [];
-
-  //   Check if any of inputs are saved in LS, .some can also be used
-  const foundUser = savedUsers.find(
-    (user) =>
-      user.username === signInUserInput.value &&
-      user.password === signInPasswordInput.value,
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+  const foundUser = users.find(
+    (u) =>
+      u.username === usernameInput.value && u.password === passwordInput.value,
   );
 
-  // console.log(isTrue);
-
-  //check if button exists
-  const existingLogoutBtn = document.querySelector("#logout-btn");
+  document.querySelector("#logout-btn")?.remove();
 
   if (foundUser) {
-    h3.innerText = "Signed In as " + signInUserInput.value;
-    h3.style.color = "green";
-
-    // Store logged-in user
     sessionStorage.setItem("loggedInUser", JSON.stringify(foundUser));
-
-    //Create logout button, render to do list, check if dark mode is saved
+    showMessage(`Signed in as ${foundUser.username}`, "green");
     createLogoutButton();
     todoList();
     applyUserSettings();
   } else {
-    h3.innerText = "Try Again";
-    h3.style.color = "red";
-
-    // Remove the session if login failed
     sessionStorage.removeItem("loggedInUser");
-
-    //to remove logout button
-    if (existingLogoutBtn) {
-      existingLogoutBtn.remove();
-    }
+    showMessage("Try Again", "red");
   }
 
   signInDiv.reset();
@@ -93,12 +121,33 @@ function signIn() {
 
 signInBtn.addEventListener("click", signIn);
 
-//Check if a user is signed in
-function checkSignedIn() {
-  const loggedInUser = JSON.parse(sessionStorage.getItem("loggedInUser"));
+function createLogoutButton() {
+  if (document.querySelector("#logout-btn")) return;
 
-  if (loggedInUser) {
-    h3.innerText = `Currently signed in as ${loggedInUser.username}`;
+  const logoutBtn = createElement("button", {
+    id: "logout-btn",
+    text: "Log Out",
+  });
+  actionBtnsDiv.append(logoutBtn);
+  logoutBtn.addEventListener("click", logout);
+}
+
+function logout() {
+  currentTodoDiv?.remove();
+  currentTodoDiv = null;
+
+  document.body.classList.remove("DM");
+  dmToggleBtn.innerText = "Dark Mode";
+
+  sessionStorage.removeItem("loggedInUser");
+  document.querySelector("#logout-btn")?.remove();
+  h3.innerText = "";
+}
+
+function checkSignedIn() {
+  const user = getLoggedInUser();
+  if (user) {
+    showMessage(`Currently signed in as ${user.username}`, "green");
     createLogoutButton();
     todoList();
     applyUserSettings();
@@ -107,214 +156,132 @@ function checkSignedIn() {
 
 checkSignedIn();
 
-//Create log out button
-function createLogoutButton() {
-  //If there is already logout button, do nothing
-  if (document.querySelector("#logout-btn")) return;
+// ============================
+// Dark Mode
+// ============================
 
-  const logoutBtn = document.createElement("button");
-  logoutBtn.id = "logout-btn";
-  logoutBtn.innerText = "Log Out";
-  actionBtnsDiv.append(logoutBtn);
-
-  logoutBtn.addEventListener("click", logout);
-}
-
-//Function for logging out
-function logout() {
-  //To erase to do render
-  if (currentTodoDiv) {
-    currentTodoDiv.remove();
-    currentTodoDiv = null;
-  }
-
-  // Reset dark mode to default
+function dmToggle() {
   const body = document.body;
-  body.classList.remove("DM");
-  dmToggleBtn.innerText = "Dark Mode";
+  body.classList.toggle("DM");
 
-  sessionStorage.removeItem("loggedInUser");
-  document.querySelector("#logout-btn")?.remove();
-  h3.innerText = "";
+  const user = getLoggedInUser();
+  if (user) saveUserSetting(user.id, "darkMode", body.classList.contains("DM"));
+
+  dmToggleBtn.innerText = body.classList.contains("DM")
+    ? "Light Mode"
+    : "Dark Mode";
 }
 
-//To-do creation + rendering
+dmToggleBtn.addEventListener("click", dmToggle);
+
+function applyUserSettings() {
+  const user = getLoggedInUser();
+  if (!user) return;
+
+  const settings = getUserSettings(user.id);
+  if (settings.darkMode) {
+    document.body.classList.add("DM");
+    dmToggleBtn.innerText = "Light Mode";
+  } else {
+    document.body.classList.remove("DM");
+    dmToggleBtn.innerText = "Dark Mode";
+  }
+}
+
+// ============================
+// To-Do List
+// ============================
+
 function todoList() {
   if (currentTodoDiv) return currentTodoDiv;
 
-  //to-dos container
-  const todoDiv = document.createElement("div");
-  todoDiv.classList.add("todo-div");
-
-  //to-do input container
-  const todoInputDiv = document.createElement("form");
-  const checkboxLabel = document.createElement("label");
-  const checkbox = document.createElement("input");
-  checkbox.type = "checkbox";
-  checkboxLabel.appendChild(checkbox);
-  checkboxLabel.append(" Completed");
-  const todoInputLabel = document.createElement("label");
-  todoInputLabel.textContent = "To do: ";
-  const todoInput = document.createElement("input");
-  todoInputLabel.appendChild(todoInput);
-  const saveBtn = document.createElement("button");
-  saveBtn.setAttribute("type", "button");
-  saveBtn.innerText = "Save";
-  saveBtn.classList.add("save-btn");
-  const inputHeading = document.createElement("h3");
-  inputHeading.innerText = "Create To-dos";
+  const todoDiv = createElement("div", { class: "todo-div" });
+  const todoInputDiv = createElement("form");
+  const checkbox = createElement("input", { type: "checkbox" });
+  const checkboxLabel = createElement("label", { text: " Completed" }, [
+    checkbox,
+  ]);
+  const todoInput = createElement("input");
+  const todoInputLabel = createElement("label", { text: "To do: " }, [
+    todoInput,
+  ]);
+  const saveBtn = createElement("button", {
+    type: "button",
+    text: "Save",
+    class: "save-btn",
+  });
+  const inputHeading = createElement("h3", { text: "Create To-dos" });
 
   todoInputDiv.append(inputHeading, checkboxLabel, todoInputLabel, saveBtn);
   todoDiv.append(todoInputDiv);
-  document.querySelector("body").append(todoDiv);
+  document.body.append(todoDiv);
 
-  //set currenttododiv as the created todo-div
   currentTodoDiv = todoDiv;
 
-  //Show each users todo-list
-  const todoListDiv = document.createElement("div");
+  const todoListDiv = createElement("div");
   todoDiv.append(todoListDiv);
 
-  //Take input values and save in LS with user ID
+  // Create todo item
   function createListItem() {
-    const loggedUser = JSON.parse(sessionStorage.getItem("loggedInUser"));
+    const loggedUser = getLoggedInUser();
+    if (!loggedUser || !todoInput.value.trim()) return;
 
-    let todo = {
+    const allTodos = JSON.parse(localStorage.getItem("todos")) || [];
+    allTodos.push({
       userId: loggedUser.id,
       id: Date.now(),
       completed: checkbox.checked,
       todo: todoInput.value,
-    };
+    });
 
-    if (localStorage.getItem("todos")) {
-      todos = JSON.parse(localStorage.getItem("todos"));
-      todos.push(todo);
-    } else {
-      todos = [todo];
-    }
-
-    localStorage.setItem("todos", JSON.stringify(todos));
-
+    localStorage.setItem("todos", JSON.stringify(allTodos));
     todoInputDiv.reset();
     renderList();
   }
 
   saveBtn.addEventListener("click", createListItem);
 
-  //Render todo list, made into function to keep code dry
+  // Render todo list
   function renderList() {
     todoListDiv.innerHTML = "";
 
-    const completedList = document.createElement("ul");
-    const incompletedList = document.createElement("ul");
+    const loggedUser = getLoggedInUser();
+    if (!loggedUser) return;
 
-    //get all todos, get current user, get their todos, split into completed and incompleted.
     const allTodos = JSON.parse(localStorage.getItem("todos")) || [];
-    const loggedUser = JSON.parse(sessionStorage.getItem("loggedInUser"));
     const userTodos = allTodos.filter((todo) => todo.userId === loggedUser.id);
-    const completedTodos = userTodos.filter((todo) => todo.completed);
-    const incompletedTodos = userTodos.filter((todo) => !todo.completed);
+    const completedTodos = userTodos.filter((t) => t.completed);
+    const incompletedTodos = userTodos.filter((t) => !t.completed);
 
-    //function to create the li item
     function renderListItem(todo) {
-      let li = document.createElement("li");
-      let listItem = document.createElement("div");
-      listItem.classList.add("list-item");
-      let span = document.createElement("span");
-      span.innerText = todo.todo;
-      let editBtn = document.createElement("button");
-      editBtn.classList.add("edit-btn");
-      editBtn.innerText = "Edit";
-
-      //We already have todo, but now we need to extend it to editFn, so wrap the event in arrow function. The arrow function “remembers” that specific todo
-      editBtn.addEventListener("click", () => {
-        editFn(todo);
+      const span = createElement("span", { text: todo.todo });
+      const editBtn = createElement("button", {
+        text: "Edit",
+        class: "edit-btn",
       });
-
-      listItem.append(span, editBtn);
-      li.append(listItem);
-      return li;
+      editBtn.addEventListener("click", () => editFn(todo));
+      const listItem = createElement("div", { class: "list-item" }, [
+        span,
+        editBtn,
+      ]);
+      return createElement("li", {}, [listItem]);
     }
 
-    function editFn(todo) {
-      // console.log(todo.id);
-      const todoListEditDiv = document.createElement("div");
-      todoListEditDiv.classList.add("edit-modal");
-      const todoInputEditDiv = document.createElement("form");
-      const checkboxEditLabel = document.createElement("label");
-      const checkboxEdit = document.createElement("input");
-      checkboxEdit.type = "checkbox";
-      checkboxEditLabel.appendChild(checkboxEdit);
-      checkboxEditLabel.append(" Completed");
-      const todoInputEditLabel = document.createElement("label");
-      todoInputEditLabel.textContent = "To do: ";
-      const todoInputEdit = document.createElement("input");
-      todoInputEditLabel.appendChild(todoInputEdit);
-      const saveEditBtn = document.createElement("button");
-      saveEditBtn.setAttribute("type", "button");
-      saveEditBtn.innerText = "Edit";
-      const closeBtn = document.createElement("button");
-      closeBtn.setAttribute("type", "button");
-      closeBtn.innerText = "Close";
-      closeBtn.classList.add("close-btn");
-      const inputEditHeading = document.createElement("h3");
-      inputEditHeading.innerText = "Edit To-do";
-
-      todoInputEditDiv.append(
-        inputEditHeading,
-        checkboxEditLabel,
-        todoInputEditLabel,
-        saveEditBtn,
-        closeBtn,
-      );
-      todoListEditDiv.append(todoInputEditDiv);
-      document.body.append(todoListEditDiv);
-
-      function updateListItem(todoId) {
-        //Better to read from local storage
-        const lsTodos = JSON.parse(localStorage.getItem("todos"));
-        const currentTodo = lsTodos.find((todo) => todo.id === todoId);
-        if (!currentTodo) return;
-
-        currentTodo.completed = checkboxEdit.checked;
-        currentTodo.todo = todoInputEdit.value;
-
-        // Save the updated array back to localStorage
-        localStorage.setItem("todos", JSON.stringify(lsTodos));
-
-        // Close the edit modal
-        todoListEditDiv.remove();
-
-        renderList();
-      }
-
-      saveEditBtn.addEventListener("click", () => {
-        updateListItem(todo.id);
-      });
-
-      closeBtn.addEventListener("click", () => {
-        todoListEditDiv.remove();
-      });
-    }
-
-    completedTodos.forEach((todo) => {
-      let li = renderListItem(todo);
-      completedList.append(li);
+    const incompleteHeading = createElement("h4", { text: "Incomplete" });
+    const completeHeading = createElement("h4", { text: "Completed" });
+    const listHeading = createElement("h3", {
+      text: `${loggedUser.username}'s To-Do List`,
     });
 
-    incompletedTodos.forEach((todo) => {
-      let li = renderListItem(todo);
-      incompletedList.append(li);
-    });
+    const incompletedList = createElement("ul");
+    incompletedTodos.forEach((todo) =>
+      incompletedList.append(renderListItem(todo)),
+    );
 
-    const incompleteHeading = document.createElement("h4");
-    incompleteHeading.innerText = "Incomplete";
-
-    const completeHeading = document.createElement("h4");
-    completeHeading.innerText = "Completed";
-
-    const listHeading = document.createElement("h3");
-    listHeading.innerText = `${loggedUser.username}'s To-Do List`;
+    const completedList = createElement("ul");
+    completedTodos.forEach((todo) =>
+      completedList.append(renderListItem(todo)),
+    );
 
     todoListDiv.append(
       listHeading,
@@ -326,45 +293,57 @@ function todoList() {
   }
 
   renderList();
-}
 
-//Dark mode toggle
-function dmToggle() {
-  const body = document.body;
-  body.classList.toggle("DM");
+  // Edit To-Do
+  function editFn(todo) {
+    const checkboxEdit = createElement("input", {
+      type: "checkbox",
+      checked: todo.completed,
+    });
+    const checkboxEditLabel = createElement("label", { text: " Completed" }, [
+      checkboxEdit,
+    ]);
+    const todoInputEdit = createElement("input", { value: todo.todo });
+    const todoInputEditLabel = createElement("label", { text: "To do: " }, [
+      todoInputEdit,
+    ]);
+    const saveEditBtn = createElement("button", {
+      type: "button",
+      text: "Edit",
+    });
+    const closeBtn = createElement("button", {
+      type: "button",
+      text: "Close",
+      class: "close-btn",
+    });
+    const inputEditHeading = createElement("h3", { text: "Edit To-do" });
 
-  const loggedUser = JSON.parse(sessionStorage.getItem("loggedInUser"));
-  if (!loggedUser) return; // nothing to save if no user
+    const todoInputEditDiv = createElement("form", {}, [
+      inputEditHeading,
+      checkboxEditLabel,
+      todoInputEditLabel,
+      saveEditBtn,
+      closeBtn,
+    ]);
 
-  // get all user settings
-  let userSettings = JSON.parse(localStorage.getItem("userSettings")) || {};
+    const todoListEditDiv = createElement("div", { class: "edit-modal" }, [
+      todoInputEditDiv,
+    ]);
+    document.body.append(todoListEditDiv);
 
-  // save the darkMode for this user
-  userSettings[loggedUser.id] = body.classList.contains("DM");
+    saveEditBtn.addEventListener("click", () => {
+      const allTodos = JSON.parse(localStorage.getItem("todos")) || [];
+      const currentTodo = allTodos.find((t) => t.id === todo.id);
+      if (!currentTodo) return;
 
-  localStorage.setItem("userSettings", JSON.stringify(userSettings));
+      currentTodo.todo = todoInputEdit.value;
+      currentTodo.completed = checkboxEdit.checked;
+      localStorage.setItem("todos", JSON.stringify(allTodos));
 
-  // update the button text
-  dmToggleBtn.innerText = body.classList.contains("DM")
-    ? "Light Mode"
-    : "Dark Mode";
-}
+      todoListEditDiv.remove();
+      renderList();
+    });
 
-dmToggleBtn.addEventListener("click", dmToggle);
-
-//Check whether dark mode is saved or not
-function applyUserSettings() {
-  const loggedUser = JSON.parse(sessionStorage.getItem("loggedInUser"));
-  if (!loggedUser) return;
-
-  const userSettings = JSON.parse(localStorage.getItem("userSettings")) || {};
-  const darkMode = userSettings[loggedUser.id]; // true or false
-
-  if (darkMode) {
-    document.body.classList.add("DM");
-    dmToggleBtn.innerText = "Light Mode";
-  } else {
-    document.body.classList.remove("DM");
-    dmToggleBtn.innerText = "Dark Mode";
+    closeBtn.addEventListener("click", () => todoListEditDiv.remove());
   }
 }
