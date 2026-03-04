@@ -260,6 +260,10 @@ function todoList() {
       const inputEditHeading = document.createElement("h3");
       inputEditHeading.innerText = "Edit To-do";
 
+      //To get the old value before editing
+      checkboxEdit.checked = todo.completed;
+      todoInputEdit.value = todo.todo;
+
       todoInputEditDiv.append(
         inputEditHeading,
         checkboxEditLabel,
