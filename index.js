@@ -13,6 +13,7 @@ signInDiv.append(h3);
 let users = [];
 let currentTodoDiv = null;
 let todos = [];
+let sharedMessages = [];
 
 //Register User
 function register() {
@@ -173,6 +174,8 @@ function todoList() {
 
   //Show each users todo-list
   const todoListDiv = document.createElement("div");
+  todoInputDiv.classList.add("create-todo");
+  todoListDiv.classList.add("render-todos");
   todoDiv.append(todoListDiv);
 
   //Take input values and save in LS with user ID
@@ -326,6 +329,145 @@ function todoList() {
   }
 
   renderList();
+
+  //To allow a user to give antoher user access to their to-dos
+  function share() {
+    //Need to know logged in user + all users
+    const loggedInUser = JSON.parse(sessionStorage.getItem("loggedInUser"));
+    const allUsers = JSON.parse(localStorage.getItem("users"));
+
+    //div to store inputs + other user's list
+    const shareListDiv = document.createElement("div");
+    shareListDiv.classList.add("share-div");
+    // document.body.append(shareListDiv);
+    currentTodoDiv.append(shareListDiv);
+
+    //div that contains inputs
+    const shareListInputDiv = document.createElement("div");
+    const userDropdown = document.createElement("select");
+
+    const emptyOption = document.createElement("option");
+    emptyOption.value = "";
+    emptyOption.innerText = "";
+    userDropdown.append(emptyOption);
+
+    allUsers.forEach((user) => {
+      if (user.id === loggedInUser.id) {
+        return;
+      } else {
+        const userIdOption = document.createElement("option");
+        userIdOption.value = user.id;
+        userIdOption.innerText = `${user.username}(${user.id})`;
+
+        userDropdown.append(userIdOption);
+      }
+    });
+
+    const shareListBtn = document.createElement("button");
+    shareListBtn.classList.add("share-btn");
+    shareListBtn.innerText = "Share List!";
+
+    //function that gives chosen user access to my todos
+    function shareList() {
+      // Get all my todos
+      const allTodos = JSON.parse(localStorage.getItem("todos")) || [];
+      const userTodos = allTodos.filter(
+        (todo) => todo.userId === loggedInUser.id,
+      );
+
+      let shareMessage = {
+        senderId: loggedInUser.id,
+        senderName: loggedInUser.username,
+        recipientId: userDropdown.value,
+        userTodos,
+      };
+
+      let sharedMessages =
+        JSON.parse(localStorage.getItem("sharedMessages")) || [];
+
+      const existingIndex = sharedMessages.findIndex(
+        (msg) =>
+          msg.senderId === shareMessage.senderId &&
+          msg.recipientId === shareMessage.recipientId,
+      );
+
+      if (existingIndex !== -1) {
+        // overwrite existing share
+        sharedMessages[existingIndex] = shareMessage;
+      } else {
+        // create new share
+        sharedMessages.push(shareMessage);
+      }
+
+      localStorage.setItem("sharedMessages", JSON.stringify(sharedMessages));
+    }
+
+    shareListBtn.addEventListener("click", shareList);
+
+    shareListInputDiv.append(userDropdown, shareListBtn);
+    shareListDiv.append(shareListInputDiv);
+  }
+
+  share();
+
+  function checkReceivedMessages() {
+    const loggedInUser = JSON.parse(sessionStorage.getItem("loggedInUser"));
+    const sharedMessages = JSON.parse(localStorage.getItem("sharedMessages"));
+
+    if (!sharedMessages) return;
+
+    //loggedinuser.id is ia number, while recipeient id comes from input.value which is a string.
+    const sharedMessage = sharedMessages.find(
+      (msg) => Number(msg.recipientId) === loggedInUser.id,
+    );
+
+    let userTodos = sharedMessage.userTodos;
+
+    function renderReceivedMessage() {
+      const sharedTodos = document.createElement("div");
+      sharedTodos.classList.add("shared-todos");
+
+      const completedList = document.createElement("ul");
+      const incompletedList = document.createElement("ul");
+
+      const completedTodos = userTodos.filter((todo) => todo.completed);
+      const incompletedTodos = userTodos.filter((todo) => !todo.completed);
+
+      completedTodos.forEach((todo) => {
+        let li = document.createElement("li");
+        li.innerText = todo.todo;
+
+        completedList.append(li);
+      });
+
+      incompletedTodos.forEach((todo) => {
+        let li = document.createElement("li");
+        li.innerText = todo.todo;
+        incompletedList.append(li);
+      });
+
+      const incompleteHeading = document.createElement("h4");
+      incompleteHeading.innerText = "Incomplete";
+
+      const completeHeading = document.createElement("h4");
+      completeHeading.innerText = "Completed";
+
+      const listHeading = document.createElement("h3");
+      listHeading.innerText = `${sharedMessage.senderName}'s To-Do List`;
+
+      sharedTodos.append(
+        listHeading,
+        incompleteHeading,
+        incompletedList,
+        completeHeading,
+        completedList,
+      );
+      todoDiv.append(sharedTodos);
+    }
+
+    renderReceivedMessage();
+  }
+  checkReceivedMessages();
 }
 
 //Dark mode toggle

@@ -49,9 +49,33 @@ h3 {
 }
 
 .todo-div {
-  display: flex;
-  justify-content: center;
-  gap: 200px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+
+  grid-template-areas:
+    "create render"
+    "share  shared";
+  gap: 40px;
+
+  width: fit-content;
+  margin: 50px auto;
+}
+
+.create-todo {
+  grid-area: create;
+}
+
+.render-todos {
+  grid-area: render;
+}
+
+.share-div {
+  grid-area: share;
+}
+
+.shared-todos {
+  grid-area: shared;
 }
 
 .action-btns {
@@ -61,6 +85,11 @@ h3 {
 
 .action-btns button {
   margin: 10px 10px;
+}
+
+.share-btn {
+  display: inline-block;
+  margin: 0 10px;
 }
 
 /* Dark mode */
