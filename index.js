@@ -384,6 +384,7 @@ function todoList() {
       );
 
       const allUsers = JSON.parse(localStorage.getItem("users"));
+      //dropdown value is a string, while id is a number
       const recipeientUser = allUsers.find(
         (user) => user.id === Number(userDropdown.value),
       );
