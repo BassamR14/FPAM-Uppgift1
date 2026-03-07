@@ -74,8 +74,17 @@ h3 {
   grid-area: share;
 }
 
-.shared-todos {
+.shared-container {
   grid-area: shared;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.shared-todos {
+  border: 1px solid green;
+  border-radius: 5px;
+  padding: 10px;
 }
 
 .action-btns {
@@ -115,6 +124,10 @@ body.DM .vl {
 
 body.DM .edit-modal {
   border-color: #f5f0e1;
+}
+
+body.DM .shared-todos {
+  border: 1px solid #f5f0e1;
 }
 
 /* Edit Section */

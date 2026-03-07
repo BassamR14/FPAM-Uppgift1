@@ -178,6 +178,10 @@ function todoList() {
   todoListDiv.classList.add("render-todos");
   todoDiv.append(todoListDiv);
 
+  const sharedContainer = document.createElement("div");
+  sharedContainer.classList.add("shared-container");
+  todoDiv.append(sharedContainer);
+
   //Take input values and save in LS with user ID
   function createListItem() {
     const loggedUser = JSON.parse(sessionStorage.getItem("loggedInUser"));
@@ -389,15 +393,15 @@ function todoList() {
       let sharedMessages =
         JSON.parse(localStorage.getItem("sharedMessages")) || [];
 
-      const existingIndex = sharedMessages.findIndex(
+      const existingMessage = sharedMessages.find(
         (msg) =>
           msg.senderId === shareMessage.senderId &&
           msg.recipientId === shareMessage.recipientId,
       );
 
-      if (existingIndex !== -1) {
+      if (existingMessage) {
         // overwrite existing share
-        sharedMessages[existingIndex] = shareMessage;
+        existingMessage.userTodos = shareMessage.userTodos;
       } else {
         // create new share
         sharedMessages.push(shareMessage);
@@ -420,14 +424,20 @@ function todoList() {
 
     if (!sharedMessages) return;
 
-    //loggedinuser.id is ia number, while recipeient id comes from input.value which is a string.
-    const sharedMessage = sharedMessages.find(
+    //loggedinuser.id is ia number, while recipeient id comes from input.value which is a string. Changed to filter if i want to show messages from multiple users to the same user.
+    const sharedMessage = sharedMessages.filter(
       (msg) => Number(msg.recipientId) === loggedInUser.id,
     );
 
-    let userTodos = sharedMessage.userTodos;
+    //this is for when i only rendered 1 recieved message
+    // let userTodos = sharedMessage.userTodos;
 
-    function renderReceivedMessage() {
+    sharedMessage.forEach((message) => {
+      let userTodos = message.userTodos;
+      renderReceivedMessage(message, userTodos);
+    });
+
+    function renderReceivedMessage(message, userTodos) {
       const sharedTodos = document.createElement("div");
       sharedTodos.classList.add("shared-todos");
 
@@ -457,7 +467,7 @@ function todoList() {
       completeHeading.innerText = "Completed";
 
       const listHeading = document.createElement("h3");
-      listHeading.innerText = `${sharedMessage.senderName}'s To-Do List`;
+      listHeading.innerText = `${message.senderName}'s To-Do List`;
 
       sharedTodos.append(
         listHeading,
@@ -466,10 +476,10 @@ function todoList() {
         completeHeading,
         completedList,
       );
-      todoDiv.append(sharedTodos);
+      sharedContainer.append(sharedTodos);
     }
 
-    renderReceivedMessage();
+    // renderReceivedMessage();
   }
   checkReceivedMessages();
 }
