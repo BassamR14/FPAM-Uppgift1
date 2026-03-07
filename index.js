@@ -383,10 +383,17 @@ function todoList() {
         (todo) => todo.userId === loggedInUser.id,
       );
 
+      const allUsers = JSON.parse(localStorage.getItem("users"));
+      const recipeientUser = allUsers.find(
+        (user) => user.id === Number(userDropdown.value),
+      );
+      console.log(recipeientUser);
+
       let shareMessage = {
         senderId: loggedInUser.id,
         senderName: loggedInUser.username,
         recipientId: userDropdown.value,
+        recipeientName: recipeientUser.username,
         userTodos,
       };
 
