@@ -30,6 +30,16 @@ function register() {
   //check if there is anything in LS, if there is, just push it into the array in LS, if not then create a new array
   if (localStorage.getItem("users")) {
     users = JSON.parse(localStorage.getItem("users"));
+
+    const existingUser = users.some(
+      (user) => user.username === registerUserInput.value,
+    );
+
+    if (existingUser) {
+      h3.innerText = "Username already exists. Please pick another";
+      return;
+    }
+
     users.push(user);
   } else {
     users = [user];
