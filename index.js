@@ -242,13 +242,20 @@ function todoList() {
       let editBtn = document.createElement("button");
       editBtn.classList.add("edit-btn");
       editBtn.innerText = "Edit";
+      let deleteBtn = document.createElement("button");
+      deleteBtn.classList.add("delete-btn");
+      deleteBtn.innerText = "Delete";
 
       //We already have todo, but now we need to extend it to editFn, so wrap the event in arrow function. The arrow function “remembers” that specific todo
       editBtn.addEventListener("click", () => {
         editFn(todo);
       });
 
-      listItem.append(span, editBtn);
+      deleteBtn.addEventListener("click", () => {
+        deleteFn(todo.id);
+      });
+
+      listItem.append(span, editBtn, deleteBtn);
       li.append(listItem);
       return li;
     }
@@ -316,6 +323,16 @@ function todoList() {
       closeBtn.addEventListener("click", () => {
         todoListEditDiv.remove();
       });
+    }
+
+    function deleteFn(todoId) {
+      const lsTodos = JSON.parse(localStorage.getItem("todos"));
+
+      const updatedTodos = lsTodos.filter((todo) => todo.id !== todoId);
+
+      localStorage.setItem("todos", JSON.stringify(updatedTodos));
+
+      renderList();
     }
 
     completedTodos.forEach((todo) => {
